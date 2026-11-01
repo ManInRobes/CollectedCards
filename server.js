@@ -153,6 +153,8 @@ app.get('/api/all-recipes', (req, res) => {
   res.json(allRecipes);
 });
 
+const PORT = process.env.PORT || 3000;
+
 app.listen(PORT, () => {
-  console.log(`Recipe server running at http://localhost:${PORT}`);
+  console.log(`Recipe server running on port ${PORT}`);
 });
