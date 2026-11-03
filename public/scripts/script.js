@@ -1,3 +1,10 @@
+/*
+TODO:
+- Add Login functionality
+- Add Logout functionality
+- Add Manager data ^, and as a manager select from cooks to add recipes to their Task page
+*/
+
 // Helper to parse numbers and fractions (e.g., "1/2", "1.5", "2") into floats
 function parseNumericValue(valStr) {
   if (!valStr) return null;
@@ -21,6 +28,7 @@ function formatScaledValue(baseNum, scale) {
   const rounded = Math.round(total * 100) / 100;
   
   // Quick fraction mapper for common cooking amounts
+  if (rounded === 0.0625) return '1/16'
   if (rounded === 0.25) return '1/4';
   if (rounded === 0.33 || rounded === 0.34) return '1/3';
   if (rounded === 0.5) return '1/2';
@@ -28,6 +36,42 @@ function formatScaledValue(baseNum, scale) {
   if (rounded === 0.75) return '3/4';
   
   return rounded.toString();
+}
+
+//Automatically handle plurality based on the final quantity
+function formatUnit(unitStr, totalQty) {
+  if (!unitStr) return '';
+  const cleanUnit = unitStr.trim();
+  const num = parseFloat(totalQty) || 1;
+
+  // Common culinary mapping (singular -> plural)
+  const plurals = {
+    'clove': 'cloves',
+    'cup': 'cups',
+    'pinch': 'pinches',
+    'packet': 'packets',
+    'slice': 'slices',
+    'piece': 'pieces',
+    'can': 'cans',
+    'can of': 'cans of',
+    'lb': 'lbs',
+    'oz': 'oz',
+    'gram': 'grams',
+    'kg': 'kg',
+    'ml': 'ml',
+    'liter': 'liters'
+  };
+
+  const singulars = Object.fromEntries(Object.entries(plurals).map(([k, v]) => [v, k]));
+  const lowerUnit = cleanUnit.toLowerCase();
+
+  if (num === 1) {
+    // Return singular form if quantity is 1
+    return plurals[lowerUnit] ? singulars[plurals[lowerUnit]] || lowerUnit : lowerUnit.replace(/s$/, '');
+  } else {
+    // Return plural form if quantity is not 1 (e.g., 2, 0.5, 3)
+    return plurals[lowerUnit] || (lowerUnit.endsWith('s') ? lowerUnit : lowerUnit + 's');
+  }
 }
 
 // Global scaling function triggered when the dropdown changes
@@ -41,15 +85,20 @@ function updateRecipeScale(recipeIndex, scaleFactor) {
   valueSpans.forEach(span => {
     const baseNum = span.getAttribute('data-base-num');
     const rawValue = span.getAttribute('data-raw-value');
+    const baseUnit = span.getAttribute('data-base-unit') || ''; // Pull original text unit
     const strongTag = span.querySelector('strong');
 
     if (!baseNum || baseNum === '') {
       strongTag.textContent = rawValue;
     } else {
-      const scaledNumStr = formatScaledValue(parseFloat(baseNum), scale);
-      const unitMatch = rawValue.match(/[a-zA-Z]+/g);
-      const unit = unitMatch ? ' ' + unitMatch.join(' ') : '';
-      strongTag.textContent = scaledNumStr + unit;
+      const parsedBase = parseFloat(baseNum);
+      const totalNum = parsedBase * scale;
+      const scaledNumStr = formatScaledValue(parsedBase, scale);
+      
+      // Automatically pluralize/singularize the unit based on the scaled total
+      const dynamicUnit = formatUnit(baseUnit, totalNum);
+      
+      strongTag.textContent = dynamicUnit ? `${scaledNumStr} ${dynamicUnit}` : scaledNumStr;
     }
   });
 }
@@ -172,32 +221,40 @@ async function initRecipeApp() {
 
         const recipesRes = await fetch(`/api/recipes/${category}`);
         const recipes = await recipesRes.json();
-
+// TO DO: make it also save quantites of recipes as well for Tasks
         contentDisplay.innerHTML = `<h2>${category}</h2>` + recipes.map((r, recipeIndex) => `
           <div class="recipe-card" data-recipe-index="${recipeIndex}">
             <div class="recipe-header">
               <div>
+              
                 <h3>${r.title}</h3>
                 <button class="save-btn" onclick="saveRecipeToUser('${r.title.replace(/'/g, "\\'")}', '${category}')">+ Save to My List</button>
               </div>
               <div class="multiplier-container">
                 <label for="scale-${recipeIndex}" style="font-size: 0.75rem; color: #6b7280; margin-right: 4px;">Scale:</label>
-                <select id="scale-${recipeIndex}" class="multiplier-select" onchange="updateRecipeScale(${recipeIndex}, this.value)">
-                  <option value="1" selected>1x</option>
-                  <option value="2">2x</option>
-                  <option value="3">3x</option>
-                  <option value="4">4x</option>
-                </select>
+                <input type="number" 
+                      id="scale-${recipeIndex}" 
+                      class="multiplier-input" 
+                      value="1" 
+                      min="1" 
+                      oninput="updateRecipeScale(${recipeIndex}, this.value)" 
+                      style="width: 55px; padding: 2px 4px; font-size: 0.875rem; border: 1px solid #d1d5db; border-radius: 4px;">
               </div>
             </div>
             
             <h4>Ingredients</h4>
             <ul>
-              ${(r.ingredients || []).map(ing => {
+               ${(r.ingredients || []).map(ing => {
                 const baseNum = parseNumericValue(ing.value);
+                
+                const unitMatch = ing.value ? ing.value.replace(/[\d\/\.\-]+/g, '').trim() : '';
+
                 return `
                   <li>
-                    <span class="ingredient-value" data-base-num="${baseNum !== null ? baseNum : ''}" data-raw-value="${ing.value || ''}">
+                    <span class="ingredient-value" 
+                          data-base-num="${baseNum !== null ? baseNum : ''}" 
+                          data-raw-value="${ing.value || ''}"
+                          data-base-unit="${unitMatch}">
                       <strong>${ing.value || ''}</strong>
                     </span>
                     <span class="ingredient-name">${ing.name || ''}</span>
@@ -222,6 +279,29 @@ async function initRecipeApp() {
   } catch (error) {
     console.error('Failed to load recipes:', error);
     contentDisplay.innerHTML = '<p>Error loading recipes. Make sure your local server is running.</p>';
+  }
+}
+
+// Tab navigation between recipe and tasks
+function switchTab(tabName) {
+  const tasksView = document.getElementById('tasks-view');
+  const recipesView = document.getElementById('recipes-view');
+  
+  const tasksBtn = document.getElementById('tab-btn-tasks');
+  const recipesBtn = document.getElementById('tab-btn-recipes');
+
+  tasksView.classList.add('hidden');
+  recipesView.classList.add('hidden');
+
+  tasksBtn.classList.remove('active');
+  recipesBtn.classList.remove('active');
+
+  if (tabName === 'tasks') {
+    tasksView.classList.remove('hidden');
+    tasksBtn.classList.add('active');
+  } else if (tabName === 'recipes') {
+    recipesView.classList.remove('hidden');
+    recipesBtn.classList.add('active');
   }
 }
 

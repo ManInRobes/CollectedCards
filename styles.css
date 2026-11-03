@@ -1,107 +1,128 @@
+/* ==========================================
+   TODO:
+   - Fix Navigation buttons and tabs
+   - div .recipe-card formatting correction
+   - adjust save-btn
+   - move styling colors to roots
+   - add dark-mode styling
+   ================================          */
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+   :root {
+  }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      line-height: 1.6;
-      color: #1f2937;
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-      background-color: #f9fafb;
-    }
+  body.dark-mode {
+  }
 
-    h1 {
-      margin-bottom: 1.5rem;
-    }
+/* ==========================================
+   1. Global Styles & Reset
+   ================================          */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-    /* Tabs Navigation */
-    .tabs-nav {
-      display: flex;
-      gap: 0.5rem;
-      border-bottom: 2px solid #e5e7eb;
-      margin-bottom: 1.5rem;
-    }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+  color: #1f2937;
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  background-color: #f9fafb;
+}
 
-    .tab-btn {
-      padding: 0.6rem 1.2rem;
-      font-size: 1rem;
-      font-weight: 500;
-      cursor: pointer;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      color: #4b5563;
-      transition: all 0.2s ease;
-    }
+h1 {
+  margin-bottom: 1.5rem;
+}
 
-    .tab-btn:hover {
-      color: #111827;
-    }
+/* ==========================================
+   2. Navigation Tabs
+   ================================          */
+.tabs-nav {
 
-    .tab-btn.active {
-      color: #f06000;
-      border-bottom-color: #ac6b0a;
-    }
+}
 
-    /* Recipe Container & Cards */
-    .recipe-card {
-      position: relative; /* Crucial for absolute child positioning */
-      background: #ffffff;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
+.tab-btn {
 
-    .recipe-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1rem;
-    }
+}
 
-    .recipe-card h3 {
-      margin: 0;
-      padding-right: 5rem; /* Prevents title from overlapping the multiplier */
-    }
+.tab-btn:hover {
 
-    /* Top-right multiplier styling */
-    .multiplier-container {
-      position: absolute;
-      top: 1.25rem;
-      right: 1.25rem;
-    }
+}
 
-    .multiplier-select {
-      padding: 0.25rem 0.5rem;
-      font-size: 0.875rem;
-      border: 1px solid #d1d5db;
-      border-radius: 4px;
-      background-color: #f9fafb;
-      cursor: pointer;
-    }
+.tab-btn.active {
 
-    .recipe-card h3 {
-      margin-bottom: 0.75rem;
-      color: #111827;
-    }
+}
 
-    
+/* ==========================================
+   3. Layout & Containers
+   ================================          */
+.content-container {
+  padding: 0;
+}
 
-    /* Formats the raw text while respecting line breaks */
-    .recipe-text {
-      font-family: inherit;
-      white-space: pre-wrap;
-      background-color: #f3f4f6;
-      padding: 1rem;
-      border-radius: 6px;
-      font-size: 0.95rem;
-      color: #374151;
-      overflow-x: auto;
-    }
+.view-section {
+  display: block;
+}
+
+/* ==========================================
+   4. Recipe Cards & Components
+   ================================          */
+.recipe-card {
+  position: relative; 
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.recipe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.recipe-card h3 {
+  margin: 0 0 0.75rem 0;
+  padding-right: 5rem; 
+  color: #111827;
+}
+
+/* Top-right multiplier styling */
+.multiplier-container {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+.multiplier-select {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  background-color: #f9fafb;
+  cursor: pointer;
+}
+
+/* Formats raw recipe text while respecting line breaks */
+.recipe-text {
+  font-family: inherit;
+  white-space: pre-wrap;
+  background-color: #f3f4f6;
+  padding: 1rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  color: #374151;
+  overflow-x: auto;
+}
+
+/* ==========================================
+   5. Utilities
+   ================================          */
+.hidden {
+  display: none;
+}

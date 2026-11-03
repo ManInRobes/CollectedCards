@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+    <meta charset="utf-8">
+    <title>Gabriel Holmquist's Collected Cards SeniorProject</title>
+    <meta name="description" content="CollectedCardsSenoirProject">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+    <meta name="author" content="Gabriel Holmquist">
+    <title>Document Title</title>
+    <link rel="stylesheet" href="styles.css">
+    </head>
+<body>
+
+  <header>
+    <section id="LoggedInHeader">
+        <!-- When User is Logged in display the Tasks and Recipes Buttons -->
+        <nav class="tab-nav">
+          <a href="/index.html"><button id="Login">Logout</button></a>
+          <button id="tab-btn-recipes" class="tab-btn active" onclick="switchTab('recipes')">Recipes</button>
+          <button id="tab-btn-tasks" class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
+        </nav>
+    </section>
+    
+  </header>
+
+  <main>
+    <section>
+      <h1>Collected Cards</h1>
+    </section>
+
+    <section id="recipes-view" class="view-section">
+      <h1>Local Recipe Library</h1>
+
+      <!-- Container where category tabs are dynamically generated -->
+      <nav id="category-tabs" class="tabs-nav"></nav>
+
+      <!-- Container where recipes for the selected tab are rendered -->
+      <main id="recipe-display"></main>
+
+      <!-- Example User Saved Recipes Sidebar -->
+      <aside class="user-sidebar">
+        <h3><span id="user-name-header">User</span>'s Saved Recipes</h3>
+        
+        <div class="add-recipe-box" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
+          <select id="master-recipe-select" style="flex: 1; padding: 0.35rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
+            <option value="">Select a recipe...</option>
+          </select>
+          <button onclick="addSelectedRecipeFromDropdown()" class="save-btn" style="margin-top: 0;">Add</button>
+        </div>
+      </section>
+
+      <section id="tasks-view" class="view-section hidden">
+
+      </section>
+
+      <ul id="user-saved-list">
+        <!-- Dynamically populated saved items -->
+      </ul>
+    </aside>
+
+  </main>
+
+  <footer>
+    <p></p>
+  </footer>
+
+  <script src="public\scripts\script.js"></script>
+</body>
+</html>

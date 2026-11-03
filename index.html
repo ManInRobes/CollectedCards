@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 
     <meta charset="utf-8">
-    <title>Gabriel Holmquist's CollectedCardsSenoirProject</title>
+    <title>Gabriel Holmquist's Collected Cards SeniorProject</title>
     <meta name="description" content="CollectedCardsSenoirProject">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,59 +15,22 @@
     </head>
 <body>
 
-  <header>
+ <header>
     <section id="LoggedInHeader">
         <!-- When User is Logged in display the Tasks and Recipes Buttons -->
         <nav>
-        <button id="Tasks">Tasks</button>
-        <button id="Recipes">Recipes</button>
+        <a href="/index.html"><button id="Login">Login</button></a>
+        <a href="/app.html"><button id="Recipes">Recipes</button></a>
+        <a href="/app.html"><button id="Tasks">Tasks</button></a>
         </nav>
     </section>
     
   </header>
 
-  <main>
-    <section>
-      <h1>Collected Cards</h1>
-    </section>
+    <main>
+        <h1>About Our Website</h1>
+        <p>This is the content of your brand new page!</p>
+    </main>
 
-    <h1>Local Recipe Library</h1>
-
-    <!-- Container where category tabs are dynamically generated -->
-    <nav id="category-tabs" class="tabs-nav"></nav>
-
-    <!-- Container where recipes for the selected tab are rendered -->
-    <main id="recipe-display"></main>
-
-    <!-- Example User Saved Recipes Sidebar -->
-    <aside class="user-sidebar">
-      <h3><span id="user-name-header">User</span>'s Saved Recipes</h3>
-      
-      <div class="add-recipe-box" style="margin-bottom: 1rem; display: flex; gap: 0.5rem;">
-        <select id="master-recipe-select" style="flex: 1; padding: 0.35rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem;">
-          <option value="">Select a recipe...</option>
-        </select>
-        <button onclick="addSelectedRecipeFromDropdown()" class="save-btn" style="margin-top: 0;">Add</button>
-      </div>
-
-      <ul id="user-saved-list">
-        <!-- Dynamically populated saved items -->
-      </ul>
-    </aside>
-
-    <section id="TasksPage">
-
-    </section>
-
-    <section id="RecipesPage">
-
-    </section>
-  </main>
-
-  <footer>
-    <p></p>
-  </footer>
-
-  <script src="public\scripts\script.js"></script>
 </body>
 </html>

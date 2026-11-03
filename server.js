@@ -6,7 +6,7 @@ const app = express();
 
 // Middleware
 app.use(express.static(__dirname));
-app.use(express.json()); // Crucial for parsing JSON request bodies
+app.use(express.json()); 
 
 // Path to your recipes folder
 const RECIPES_DIR = path.join(__dirname, 'src', 'LocalTestRecipes');
@@ -61,7 +61,6 @@ app.get('/api/recipes/:category', (req, res) => {
       } else if (lower.includes('instruction') || lower.includes('direction') || lower.includes('method')) {
         currentSection = 'instructions';
       } else {
-        // We are inside a section, process lines
         if (currentSection === 'ingredients') {
           // Remove bullet points if present (- or *)
           const cleanItem = trimmed.replace(/^[-*•]\s*/, '');
