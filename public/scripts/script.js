@@ -5,6 +5,23 @@ TODO:
 - Add Manager data ^, and as a manager select from cooks to add recipes to their Task page
 */
 
+// Toggle Light/Dark mode and save preference to localStorage
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  const isDarkMode = document.body.classList.contains('dark-mode');
+  localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+}
+
+// Initialize theme on page load based on saved preference
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-mode');
+  } else {
+    document.body.classList.remove('dark-mode');
+  }
+}
+
 // Helper to parse numbers and fractions (e.g., "1/2", "1.5", "2") into floats
 function parseNumericValue(valStr) {
   if (!valStr) return null;
@@ -28,7 +45,7 @@ function formatScaledValue(baseNum, scale) {
   const rounded = Math.round(total * 100) / 100;
   
   // Quick fraction mapper for common cooking amounts
-  if (rounded === 0.0625) return '1/16'
+  if (rounded === 0.0625) return '1/16';
   if (rounded === 0.25) return '1/4';
   if (rounded === 0.33 || rounded === 0.34) return '1/3';
   if (rounded === 0.5) return '1/2';
@@ -38,7 +55,7 @@ function formatScaledValue(baseNum, scale) {
   return rounded.toString();
 }
 
-//Automatically handle plurality based on the final quantity
+// Automatically handle plurality based on the final quantity
 function formatUnit(unitStr, totalQty) {
   if (!unitStr) return '';
   const cleanUnit = unitStr.trim();
@@ -74,12 +91,12 @@ function formatUnit(unitStr, totalQty) {
   }
 }
 
-// Global scaling function triggered when the dropdown changes
+// Global scaling function triggered when the number input changes
 function updateRecipeScale(recipeIndex, scaleFactor) {
   const card = document.querySelector(`.recipe-card[data-recipe-index="${recipeIndex}"]`);
   if (!card) return;
 
-  const scale = parseFloat(scaleFactor);
+  const scale = (scaleFactor === "" || parseFloat(scaleFactor) < 1) ? 1 : parseFloat(scaleFactor);
   const valueSpans = card.querySelectorAll('.ingredient-value');
 
   valueSpans.forEach(span => {
@@ -103,7 +120,7 @@ function updateRecipeScale(recipeIndex, scaleFactor) {
   });
 }
 
-// Fetch and render the example user's saved recipes list
+// Fetch and render the example user's saved recipes list across the app
 async function loadUserData() {
   try {
     const res = await fetch('/api/user');
@@ -116,30 +133,90 @@ async function loadUserData() {
     }
 
     const savedListEl = document.getElementById('user-saved-list');
-    if (!savedListEl) return;
+    const tasksSavedListEl = document.getElementById('tasks-saved-recipes-list');
 
+    // Wrap the empty message in an <li> so it matches the <ul> structure
     if (user.savedRecipes.length === 0) {
-      savedListEl.innerHTML = '<p style="color: #6b7280; font-size: 0.875rem;">No saved recipes yet.</p>';
+      const emptyHtml = '<li style="padding: 0.5rem 0; color: #6b7280; font-size: 0.875rem; list-style: none;">No saved recipes yet.</li>';
+      if (savedListEl) savedListEl.innerHTML = emptyHtml;
+      if (tasksSavedListEl) tasksSavedListEl.innerHTML = emptyHtml;
       return;
     }
 
-    savedListEl.innerHTML = user.savedRecipes.map(recipe => `
-      <li>
-        <span><strong>${recipe.title}</strong><br><small style="color: #6b7280;">${recipe.category}</small></span>
-        <button onclick="removeRecipeFromUser('${recipe.title.replace(/'/g, "\\'")}')" style="background:none; border:none; color: #ef4444; cursor:pointer; font-size:1rem;" title="Remove">✕</button>
+    // Generate the HTML template for the saved recipes including ingredients and instructions
+    const recipesHTML = user.savedRecipes.map(recipe => `
+      <li style="padding: 1rem; border-radius: 6px; margin-bottom: 0.75rem;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+          <div>
+            <strong>${recipe.title}</strong> 
+            <span style="color: #007bff; font-size: 0.8rem;">(${recipe.scale || 1}x batch)</span>
+            <br><small style="color: #6b7280;">${recipe.category}</small>
+          </div>
+          <button onclick="removeRecipeFromUser('${recipe.title.replace(/'/g, "\\'")}')" style="background:none; border:none; color: #ef4444; cursor:pointer; font-size:1rem;" title="Remove">✕</button>
+        </div>
+        
+        <!-- Scaled Ingredients List -->
+        ${recipe.ingredients && recipe.ingredients.length > 0 ? `
+          <div style="margin-top: 0.5rem;">
+            <strong style="font-size: 0.85rem; color: #374151;">Ingredients:</strong>
+            <ul style="margin-top: 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; color: #4b5563;">
+              ${recipe.ingredients.map(i => `<li>${i.display}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+
+        <!-- Instructions List -->
+        ${recipe.instructions && recipe.instructions.length > 0 ? `
+          <div style="margin-top: 0.75rem;">
+            <strong style="font-size: 0.85rem; color: #374151;">Instructions:</strong>
+            <ol style="margin-top: 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; color: #4b5563;">
+              ${recipe.instructions.map(inst => `<li style="margin-bottom: 0.25rem;">${inst}</li>`).join('')}
+            </ol>
+          </div>
+        ` : ''}
       </li>
     `).join('');
+
+    // Update both UI locations
+    if (savedListEl) savedListEl.innerHTML = recipesHTML;
+    if (tasksSavedListEl) tasksSavedListEl.innerHTML = recipesHTML;
+
   } catch (err) {
     console.error('Failed to load user data', err);
   }
 }
 
-// Save a recipe to the user's list
-async function saveRecipeToUser(title, category) {
+// Grabs the current scale, scaled ingredients, and instructions from the card
+function saveRecipeFromCard(title, category, recipeIndex) {
+  const card = document.querySelector(`.recipe-card[data-recipe-index="${recipeIndex}"]`);
+  if (!card) return;
+
+  const scaleInput = document.getElementById(`scale-${recipeIndex}`);
+  const scale = scaleInput ? scaleInput.value : 1;
+
+  // Extract ingredients
+  const ingredients = [];
+  card.querySelectorAll('.ingredient-item').forEach(item => {
+    const qtyText = item.querySelector('.ingredient-value strong').textContent.trim();
+    const nameText = item.querySelector('.ingredient-name').textContent.trim();
+    ingredients.push({ display: `${qtyText} ${nameText}` });
+  });
+
+  // Extract instructions
+  const instructions = [];
+  card.querySelectorAll('ol li').forEach(li => {
+    instructions.push(li.textContent.trim());
+  });
+
+  saveRecipeToUser(title, category, scale, ingredients, instructions);
+}
+
+// Updated save function to accept instructions
+async function saveRecipeToUser(title, category, scale = 1, ingredients = [], instructions = []) {
   const res = await fetch('/api/user/recipes', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title, category })
+    body: JSON.stringify({ title, category, scale, ingredients, instructions })
   });
   
   if (res.ok) {
@@ -192,6 +269,9 @@ async function addSelectedRecipeFromDropdown() {
 
 // Main App Initialization
 async function initRecipeApp() {
+  // Initialize theme preference on startup
+  initTheme();
+
   const tabContainer = document.getElementById('category-tabs');
   const contentDisplay = document.getElementById('recipe-display');
 
@@ -221,14 +301,13 @@ async function initRecipeApp() {
 
         const recipesRes = await fetch(`/api/recipes/${category}`);
         const recipes = await recipesRes.json();
-// TO DO: make it also save quantites of recipes as well for Tasks
+
         contentDisplay.innerHTML = `<h2>${category}</h2>` + recipes.map((r, recipeIndex) => `
           <div class="recipe-card" data-recipe-index="${recipeIndex}">
             <div class="recipe-header">
               <div>
-              
                 <h3>${r.title}</h3>
-                <button class="save-btn" onclick="saveRecipeToUser('${r.title.replace(/'/g, "\\'")}', '${category}')">+ Save to My List</button>
+                <button class="save-btn" onclick="saveRecipeFromCard('${r.title.replace(/'/g, "\\'")}', '${category}', ${recipeIndex})">+ Save to My List</button>
               </div>
               <div class="multiplier-container">
                 <label for="scale-${recipeIndex}" style="font-size: 0.75rem; color: #6b7280; margin-right: 4px;">Scale:</label>
@@ -246,11 +325,10 @@ async function initRecipeApp() {
             <ul>
                ${(r.ingredients || []).map(ing => {
                 const baseNum = parseNumericValue(ing.value);
-                
                 const unitMatch = ing.value ? ing.value.replace(/[\d\/\.\-]+/g, '').trim() : '';
 
                 return `
-                  <li>
+                  <li class="ingredient-item">
                     <span class="ingredient-value" 
                           data-base-num="${baseNum !== null ? baseNum : ''}" 
                           data-raw-value="${ing.value || ''}"

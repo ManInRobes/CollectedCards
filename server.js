@@ -102,15 +102,25 @@ app.get('/api/user', (req, res) => {
   res.json(exampleUser);
 });
 
-// 4. Save a recipe to the example user's list
+// 4. Save a recipe to the example user's list (with scale and ingredient support)
 app.post('/api/user/recipes', (req, res) => {
-  const { title, category } = req.body;
+  const { title, category, scale, ingredients } = req.body;
   if (!title) return res.status(400).json({ error: 'Recipe title is required' });
 
-  // Prevent duplicate saves
-  const exists = exampleUser.savedRecipes.some(r => r.title === title && r.category === category);
-  if (!exists) {
-    exampleUser.savedRecipes.push({ title, category, savedAt: new Date() });
+  // Prevent duplicate saves (or update scale & ingredients if already saved)
+  const existingRecipe = exampleUser.savedRecipes.find(r => r.title === title && r.category === category);
+  
+  if (existingRecipe) {
+    existingRecipe.scale = scale || 1; 
+    existingRecipe.ingredients = ingredients || []; // Update ingredients
+  } else {
+    exampleUser.savedRecipes.push({ 
+      title, 
+      category, 
+      scale: scale || 1, 
+      ingredients: ingredients || [], // Store ingredients
+      savedAt: new Date() 
+    });
   }
 
   res.json({ success: true, savedRecipes: exampleUser.savedRecipes });

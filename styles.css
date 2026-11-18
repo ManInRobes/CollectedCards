@@ -1,20 +1,61 @@
+/* TODO: Darkmode Button
+   TODO: Login Page
+   TODO: Make styling more align with Figma idea
+   TODO: Fix Header buttons
+  - see tasks area 
+*/
+
+/* Fonts 
+.nunito-sans-<uniquifier> {
+  font-family: "Nunito Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  font-variation-settings:
+    "wdth" 100,
+    "YTLC" 500;
+}
+*/
+
+
+:root {
+  /* Light Mode Palette */
+  --bg-main: #f9fafb;
+  --bg-card: #ffffff;
+  --bg-sidebar: #ffffff;
+  --text-main: #1f2937;
+  --text-muted: #6b7280;
+  --border-color: #e5e7eb;
+  
+  --primary: #007bff;
+  --primary-hover: #0056b3;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+  
+  --input-bg: #ffffff;
+  --input-border: #d1d5db;
+  --radius: 8px;
+}
+
+body.dark-mode {
+  --bg-main: #121212;
+  --bg-card: #1e1e1e;
+  --bg-sidebar: #18181b;
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --border-color: #27272a;
+  
+  --primary: #3b82f6;
+  --primary-hover: #60a5fa;
+  --danger-color: #f87171;
+  --danger-hover: #ef4444;
+  
+  --input-bg: #27272a;
+  --input-border: #3f3f46;
+}
+
 /* ==========================================
-   TODO:
-   - Fix Navigation buttons and tabs
-   - div .recipe-card formatting correction
-   - adjust save-btn
-   - move styling colors to roots
-   - add dark-mode styling
-   ================================          */
-
-   :root {
-  }
-
-  body.dark-mode {
-  }
-
-/* ==========================================
-   1. Global Styles & Reset
+1. Global Styles & Reset
    ================================          */
 * {
   box-sizing: border-box;
@@ -23,13 +64,17 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  line-height: 1.6;
-  color: #1f2937;
-  max-width: 800px;
-  margin: 2rem auto;
-  padding: 0 1rem;
-  background-color: #f9fafb;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Nunito Sans", system-ui, -apple-system, sans-serif;
+  max-width: 98%;
+  margin: 0 auto;
+  padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3 {
+  color: var(--text-main);
 }
 
 h1 {
@@ -37,26 +82,38 @@ h1 {
 }
 
 /* ==========================================
-   2. Navigation Tabs
+2. Navigation Tabs
    ================================          */
 .tabs-nav {
-
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .tab-btn {
-
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
 }
 
 .tab-btn:hover {
-
+  border-color: var(--primary);
 }
 
 .tab-btn.active {
-
+  background-color: var(--primary);
+  color: #ffffff;
+  border-color: var(--primary);
 }
 
 /* ==========================================
-   3. Layout & Containers
+3. Layout & Containers
    ================================          */
 .content-container {
   padding: 0;
@@ -67,16 +124,41 @@ h1 {
 }
 
 /* ==========================================
-   4. Recipe Cards & Components
+4. Recipe Cards & Components
    ================================          */
+
+/* Make the recipe display container a 2-column grid */
+#recipe-display {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Ensure the category title above the grid spans across both columns */
+#recipe-display > h2 {
+  grid-column: span 2;
+  margin-bottom: 0.5rem;
+}
+
 .recipe-card {
   position: relative; 
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
   padding: 1.5rem;
-  margin-bottom: 1.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 0; 
+  height: 100%;     
+  display: flex;
+  flex-direction: column;
+}
+
+.user-sidebar {
+  background-color: var(--bg-sidebar);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-top: 2rem;
 }
 
 .recipe-header {
@@ -89,7 +171,7 @@ h1 {
 .recipe-card h3 {
   margin: 0 0 0.75rem 0;
   padding-right: 5rem; 
-  color: #111827;
+  color: var(--text-main);
 }
 
 /* Top-right multiplier styling */
@@ -99,30 +181,43 @@ h1 {
   right: 1.25rem;
 }
 
-.multiplier-select {
+#recipe-display h4{
+  padding: 1.3 rem;
+}
+
+#recipe-display ul, #recipe-display ol {
+  padding-left: 15px;
+}
+
+.multiplier-select, .multiplier-input {
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--input-border);
   border-radius: 4px;
-  background-color: #f9fafb;
+  background-color: var(--input-bg);
+  color: var(--text-main);
   cursor: pointer;
 }
 
-/* Formats raw recipe text while respecting line breaks */
-.recipe-text {
-  font-family: inherit;
-  white-space: pre-wrap;
-  background-color: #f3f4f6;
-  padding: 1rem;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  color: #374151;
-  overflow-x: auto;
+/* Save button */
+#recipe-display div button{
+  background-color: var(--primary);
+  padding: 5px;
+  border-radius: 8px;
+  color: var(--bg-main);
 }
 
 /* ==========================================
-   5. Utilities
+5. Tasks TODO: Fix these styles
+   ================================          */
+
+#user-saved-list {
+  background-color: var(--bg-card);
+}
+
+/* ==========================================
+6. Utilities
    ================================          */
 .hidden {
-  display: none;
+  display: none !important;
 }
