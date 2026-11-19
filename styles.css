@@ -1,4 +1,4 @@
-/* TODO: Darkmode Button
+/* TODO: Darkmode Button Styling
    TODO: Login Page
    TODO: Make styling more align with Figma idea
    TODO: Fix Header buttons
@@ -21,14 +21,14 @@
 :root {
   /* Light Mode Palette */
   --bg-main: #f9fafb;
-  --bg-card: #ffffff;
+  --bg-card: #fff9d6;
   --bg-sidebar: #ffffff;
   --text-main: #1f2937;
   --text-muted: #6b7280;
   --border-color: #e5e7eb;
   
-  --primary: #007bff;
-  --primary-hover: #0056b3;
+  --primary: #dacd1b;
+  --primary-hover: #e29d1e;
   --danger-color: #ef4444;
   --danger-hover: #dc2626;
   
@@ -42,11 +42,11 @@ body.dark-mode {
   --bg-card: #1e1e1e;
   --bg-sidebar: #18181b;
   --text-main: #e5e7eb;
-  --text-muted: #9ca3af;
+  --text-muted: #c2c2c2;
   --border-color: #27272a;
   
-  --primary: #3b82f6;
-  --primary-hover: #60a5fa;
+  --primary: #85430c;
+  --primary-hover: #e29d1e;
   --danger-color: #f87171;
   --danger-hover: #ef4444;
   
@@ -94,7 +94,7 @@ h1 {
 .tab-btn {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
-  color: var(--text-main);
+  color: var(--text-muted);
   padding: 0.5rem 1rem;
   border-radius: var(--radius);
   cursor: pointer;
@@ -108,7 +108,7 @@ h1 {
 
 .tab-btn.active {
   background-color: var(--primary);
-  color: #ffffff;
+  color: var(--text-main);
   border-color: var(--primary);
 }
 
@@ -204,7 +204,7 @@ h1 {
   background-color: var(--primary);
   padding: 5px;
   border-radius: 8px;
-  color: var(--bg-main);
+  color: var(--text-main);
 }
 
 /* ==========================================
