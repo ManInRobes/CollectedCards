@@ -150,7 +150,7 @@ async function loadUserData() {
           <div>
             <strong>${recipe.title}</strong> 
             <span style="color: #007bff; font-size: 0.8rem;">(${recipe.scale || 1}x batch)</span>
-            <br><small style="color: #6b7280;">${recipe.category}</small>
+            <br><small">${recipe.category}</small>
           </div>
           <button onclick="removeRecipeFromUser('${recipe.title.replace(/'/g, "\\'")}')" style="background:none; border:none; color: #ef4444; cursor:pointer; font-size:1rem;" title="Remove">✕</button>
         </div>
@@ -158,7 +158,7 @@ async function loadUserData() {
         <!-- Scaled Ingredients List -->
         ${recipe.ingredients && recipe.ingredients.length > 0 ? `
           <div style="margin-top: 0.5rem;">
-            <strong style="font-size: 0.85rem; color: #374151;">Ingredients:</strong>
+            <strong style="font-size: 0.85rem">Ingredients:</strong>
             <ul style="margin-top: 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; color: #4b5563;">
               ${recipe.ingredients.map(i => `<li>${i.display}</li>`).join('')}
             </ul>
@@ -168,12 +168,14 @@ async function loadUserData() {
         <!-- Instructions List -->
         ${recipe.instructions && recipe.instructions.length > 0 ? `
           <div style="margin-top: 0.75rem;">
-            <strong style="font-size: 0.85rem; color: #374151;">Instructions:</strong>
-            <ol style="margin-top: 0.2rem; padding-left: 1.2rem; font-size: 0.85rem; color: #4b5563;">
+            <strong>Instructions:</strong>
+            <ol style="margin-top: 0.2rem; padding-left: 1.2rem; font-size: 0.85rem;">
               ${recipe.instructions.map(inst => `<li style="margin-bottom: 0.25rem;">${inst}</li>`).join('')}
             </ol>
           </div>
         ` : ''}
+
+      <hr>
       </li>
     `).join('');
 
@@ -254,17 +256,75 @@ async function loadMasterRecipeDropdown() {
   }
 }
 
-// Handle adding a recipe from the dropdown selection box
+// Build formatted ingredient display strings for a recipe object at a given scale
+function buildScaledIngredientDisplays(rawIngredients = [], scale = 1) {
+  const numericScale = (scale === '' || isNaN(parseFloat(scale)) || parseFloat(scale) < 1)
+    ? 1
+    : parseFloat(scale);
+
+  return rawIngredients.map(ing => {
+    const rawVal = ing.value || '';
+    const nameText = (ing.name || '').trim();
+    const baseNum = parseNumericValue(rawVal);
+    const unitMatch = rawVal ? rawVal.replace(/[\d\/\.\-]+/g, '').trim() : '';
+
+    let qtyText = rawVal;
+    if (baseNum !== null) {
+      const totalNum = baseNum * numericScale;
+      const scaledNumStr = formatScaledValue(baseNum, numericScale);
+      const dynamicUnit = formatUnit(unitMatch, totalNum);
+      qtyText = dynamicUnit ? `${scaledNumStr} ${dynamicUnit}` : scaledNumStr;
+    }
+
+    return {
+      display: [qtyText.trim(), nameText].filter(Boolean).join(' ')
+    };
+  });
+}
+
+// Handle adding a full recipe (ingredients + instructions + scale) from the sidebar dropdown
 async function addSelectedRecipeFromDropdown() {
   const selectEl = document.getElementById('master-recipe-select');
   if (!selectEl || !selectEl.value) return;
 
+  const scaleEl = document.getElementById('master-recipe-scale');
+  const rawScale = scaleEl ? parseFloat(scaleEl.value) : 1;
+  const scale = (!isNaN(rawScale) && rawScale >= 1) ? rawScale : 1;
+
+  const selectedTitle = selectEl.value;
   const selectedOption = selectEl.options[selectEl.selectedIndex];
-  const title = selectEl.value;
   const category = selectedOption.getAttribute('data-category');
 
-  await saveRecipeToUser(title, category);
-  selectEl.value = ""; 
+  let finalTitle = selectedTitle;
+  let ingredients = [];
+  let instructions = [];
+
+  try {
+    const res = await fetch(`/api/recipes/${encodeURIComponent(category)}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const categoryRecipes = await res.json();
+
+    // Match by title first, or fall back to matching normalized filename/title
+    const normalize = str => (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const matched =
+      categoryRecipes.find(r => r.title === selectedTitle) ||
+      categoryRecipes.find(r => normalize(r.title) === normalize(selectedTitle));
+
+    if (matched) {
+      finalTitle = matched.title || selectedTitle;
+      ingredients = buildScaledIngredientDisplays(matched.ingredients || [], scale);
+      instructions = [...(matched.instructions || [])];
+    } else {
+      console.warn(`Recipe "${selectedTitle}" not found in category "${category}"`);
+    }
+  } catch (err) {
+    console.error('Failed to load full recipe for quick add:', err);
+  }
+
+  await saveRecipeToUser(finalTitle, category, scale, ingredients, instructions);
+
+  selectEl.value = '';
+  if (scaleEl) scaleEl.value = '1';
 }
 
 // Main App Initialization
